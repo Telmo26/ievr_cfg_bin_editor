@@ -1,6 +1,6 @@
 #[repr(i16)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum FieldType{
+pub enum RdbnFieldType {
     AbilityData = 0,
     EnhanceData = 1,
     StatusRate = 2,
@@ -22,26 +22,26 @@ pub enum FieldType{
     DataTuple = 21
 }
 
-impl TryFrom<i16> for FieldType {
+impl TryFrom<i16> for RdbnFieldType {
     type Error = ();
 
     fn try_from(value: i16) -> Result<Self, Self::Error> {
         match value {
-            0 => Ok(FieldType::AbilityData),
-            1 => Ok(FieldType::EnhanceData),
-            2 => Ok(FieldType::StatusRate),
-            3 => Ok(FieldType::Bool),
-            4 => Ok(FieldType::Byte),
-            5 => Ok(FieldType::Short),
-            6 => Ok(FieldType::Int),
-            9 => Ok(FieldType::ActType),
-            10 => Ok(FieldType::Flag),
-            0xD => Ok(FieldType::Float),
-            0xF => Ok(FieldType::Hash),
-            0x12 => Ok(FieldType::RateMatrix),
-            0x13 => Ok(FieldType::Position),
-            0x14 => Ok(FieldType::String),
-            0x15 => Ok(FieldType::DataTuple),
+            0 => Ok(RdbnFieldType::AbilityData),
+            1 => Ok(RdbnFieldType::EnhanceData),
+            2 => Ok(RdbnFieldType::StatusRate),
+            3 => Ok(RdbnFieldType::Bool),
+            4 => Ok(RdbnFieldType::Byte),
+            5 => Ok(RdbnFieldType::Short),
+            6 => Ok(RdbnFieldType::Int),
+            9 => Ok(RdbnFieldType::ActType),
+            10 => Ok(RdbnFieldType::Flag),
+            0xD => Ok(RdbnFieldType::Float),
+            0xF => Ok(RdbnFieldType::Hash),
+            0x12 => Ok(RdbnFieldType::RateMatrix),
+            0x13 => Ok(RdbnFieldType::Position),
+            0x14 => Ok(RdbnFieldType::String),
+            0x15 => Ok(RdbnFieldType::DataTuple),
             _ => Err(()),
         }
     }

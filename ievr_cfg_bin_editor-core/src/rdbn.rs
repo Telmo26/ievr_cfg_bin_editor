@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use memmap2::Mmap;
 
-mod binary_reader;
 mod header;
 mod root_entry;
 mod type_entry;
@@ -14,16 +13,19 @@ mod declarations;
 mod list_entry;
 
 use self::{
-    binary_reader::BinaryReader,
     header::RdbnHeader,
     root_entry::RdbnRootEntry,
     type_entry::RdbnTypeEntry,
     field_entry::RdbnFieldEntry,
     declarations::{RdbnFieldDeclaration, RdbnTypeDeclaration},
-    field_type::FieldType,
-    field_type_category::FieldTypeCategory,
-    list_entry::{RdbnListEntry, RdbnValue},
+    field_type_category::RdbnFieldTypeCategory,
+    list_entry::RdbnListEntry,
 };
+
+pub use field_type::RdbnFieldType;
+pub use list_entry::RdbnValue;
+
+use super::common::binary_reader::BinaryReader;
 
 const MINIMUM_SIZE: usize = 0x3C;
 const RDBN_HEADER: u32 = const { u32::from_le_bytes(*b"RDBN") };
@@ -178,8 +180,8 @@ impl Rdbn {
                     name: string_lookup[&field_entry.name_hash].clone(),
                     count: field_entry.value_count,
                     size: field_entry.value_size,
-                    field_type: FieldType::try_from(field_entry.r#type).unwrap(),
-                    field_type_category: FieldTypeCategory::try_from(field_entry.type_category).unwrap(),
+                    field_type: RdbnFieldType::try_from(field_entry.r#type).unwrap(),
+                    field_type_category: RdbnFieldTypeCategory::try_from(field_entry.type_category).unwrap(),
                 });
             }
 
@@ -223,7 +225,7 @@ impl Rdbn {
 
                     binary_reader.set_position((type_value_offset + field_entry.value_offset) as usize);
 
-                    for k in 0..field_entry.value_count {
+                    for _ in 0..field_entry.value_count {
                         match field_entry.r#type {
                             // Ability Data
                             0..3 => list_values[j as usize][h as usize].push(

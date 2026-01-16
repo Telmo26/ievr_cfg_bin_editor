@@ -1,6 +1,6 @@
 use super::{
-    field_type::FieldType, 
-    field_type_category::FieldTypeCategory
+    field_type::RdbnFieldType, 
+    field_type_category::RdbnFieldTypeCategory
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -8,8 +8,8 @@ pub struct RdbnFieldDeclaration {
     pub name: String,
     pub count: i32,
     pub size: i32,
-    pub field_type: FieldType,
-    pub field_type_category: FieldTypeCategory,
+    pub field_type: RdbnFieldType,
+    pub field_type_category: RdbnFieldTypeCategory,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

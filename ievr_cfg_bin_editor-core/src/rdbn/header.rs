@@ -1,12 +1,12 @@
-use super::binary_reader::BinaryReader;
+use super::BinaryReader;
 
 #[derive(Debug)]
 pub struct RdbnHeader {
     pub(crate) magic: u32,
-    pub(crate) header_size: i16,
-    pub(crate) version: i32,
+    pub(crate) _header_size: i16,
+    pub(crate) _version: i32,
     pub(crate) data_offset: i16,
-    pub(crate) data_size: i32,
+    pub(crate) _data_size: i32,
 
     pub(crate) type_offset: i16,
     pub(crate) type_count: i16,
@@ -24,10 +24,10 @@ pub struct RdbnHeader {
 impl RdbnHeader {
     pub fn new(binary_reader: &mut BinaryReader) -> RdbnHeader {
         let magic       = binary_reader.read_u32();
-        let header_size = binary_reader.read_i16();
-        let version     = binary_reader.read_i32();
+        let _header_size = binary_reader.read_i16();
+        let _version     = binary_reader.read_i32();
         let data_offset = binary_reader.read_i16();
-        let data_size   = binary_reader.read_i32();
+        let _data_size   = binary_reader.read_i32();
 
         // Skip 0x14 bytes (unknown / reserved)
         binary_reader.skip(0x14);
@@ -46,10 +46,10 @@ impl RdbnHeader {
 
         RdbnHeader {
             magic,
-            header_size,
-            version,
+            _header_size,
+            _version,
             data_offset,
-            data_size,
+            _data_size,
 
             type_offset,
             type_count,

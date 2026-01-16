@@ -1,4 +1,4 @@
-use crate::rdbn::binary_reader::BinaryReader;
+use super::BinaryReader;
 
 pub struct RdbnTypeEntry {
     pub(crate) name_hash: u32,
