@@ -1,0 +1,3 @@
+[workspace]
+resolver = "3"
+members = [ "ievr_cfg_bin_editor-gui","ievr_cfg_bin_editor-core"]
