@@ -1,6 +1,6 @@
 # IEVR cfg.bin Editor
 
-This project stems mostly from the need to read and write the configuration files for Inazuma Eleven Victory Road. The exisiting library is written entirely in C#, making it very hard to integrate into Rust projects. This project is an attempt at reimplementing the logic of [CfgBinEditor](https://github.com/onepiecefreak3/CfgBinEditor) by (onepiecefreak3)[https://github.com/onepiecefreak3]. 
+This project stems mostly from the need to read and write the configuration files for Inazuma Eleven Victory Road. The exisiting library is written entirely in C#, making it very hard to integrate into Rust projects. This project is an attempt at reimplementing the logic of [CfgBinEditor](https://github.com/onepiecefreak3/CfgBinEditor) by [onepiecefreak3](https://github.com/onepiecefreak3). 
 
 # Features
 
