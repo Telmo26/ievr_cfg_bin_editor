@@ -6,7 +6,7 @@ pub struct BinaryReader<'a> {
 }
 
 impl<'a> BinaryReader<'a> {
-    pub fn new(file: &Mmap) -> BinaryReader {
+    pub fn new(file: &'a Mmap) -> BinaryReader<'a> {
         BinaryReader { file, position: 0 }
     }
 
