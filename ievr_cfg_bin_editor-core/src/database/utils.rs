@@ -1,4 +1,4 @@
-use crate::rdbn::{RdbnFieldType, RdbnValue};
+use crate::{rdbn::{RdbnFieldType, RdbnValue}, t2b::{T2bEntryValue, T2bValue, T2bValueType}};
 
 #[derive(Debug)]
 pub struct Table {
@@ -31,6 +31,7 @@ impl Table {
 
 #[derive(Debug)]
 pub struct Schema {
+    pub(super) name: String,
     pub(super) fields: Vec<Field>
 }
 
@@ -47,14 +48,14 @@ pub struct Field {
 
 #[derive(Debug)]
 pub struct Row {
-    pub values: Vec<Value>,
+    pub values: Vec<Vec<Value>>, // A single column can store multiple values in the RDBN data format
 }
 
 #[derive(Debug)]
 pub enum ValueType {
-    Rdbn(RdbnFieldType)
+    Rdbn(RdbnFieldType),
+    T2b(T2bValueType),
 }
-
 
 
 #[derive(Clone, Debug)]
@@ -62,9 +63,11 @@ pub enum Value {
     Bool(bool),
     Byte(u8),
     Int(i32),
+    Long(i64),
     Short(i16),
     UInt(u32),
     Float(f32),
+    FloatLong(f64),
     String(String),
 
     Hash(u32),
@@ -88,6 +91,18 @@ impl From<&RdbnValue> for Value {
             RdbnValue::Bytes(v) => Value::Bytes(v.clone()),
             RdbnValue::Float4(v) => Value::Vec4F32(*v),
             RdbnValue::Short2(v) => Value::Tuple2I16(v[0], v[1]),
+        }
+    }
+}
+
+impl From<&T2bEntryValue> for Value {
+    fn from(entry: &T2bEntryValue) -> Self {
+        match &entry.value {
+            T2bValue::String(v) => Value::String(v.clone()),
+            T2bValue::Integer(v) => Value::Int(*v),
+            T2bValue::Long(v) => Value::Long(*v),
+            T2bValue::F32(v) => Value::Float(*v),
+            T2bValue::F64(v) => Value::FloatLong(*v),
         }
     }
 }

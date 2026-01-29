@@ -36,7 +36,7 @@ pub struct Rdbn {
 }
 
 impl Rdbn {
-    pub fn read(file: Mmap) -> Option<Rdbn> {
+    pub fn read(file: &Mmap) -> Option<Rdbn> {
         if file.len() < MINIMUM_SIZE {
             return None
         }
