@@ -1,6 +1,8 @@
+use serde::{Serialize, Deserialize};
+
 use crate::{rdbn::{RdbnFieldType, RdbnValue}, t2b::{T2bEntryValue, T2bValue, T2bValueType}};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Table {
     pub(super) name: String,
     pub(super) schema: Schema,
@@ -29,7 +31,7 @@ impl Table {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Schema {
     pub(super) name: String,
     pub(super) fields: Vec<Field>
@@ -39,26 +41,26 @@ impl Schema {
     
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Field {
     pub name: String,
     pub value_type: ValueType,
     pub count: usize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Row {
     pub values: Vec<Vec<Value>>, // A single column can store multiple values in the RDBN data format
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum ValueType {
     Rdbn(RdbnFieldType),
     T2b(T2bValueType),
 }
 
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Value {
     Bool(bool),
     Byte(u8),

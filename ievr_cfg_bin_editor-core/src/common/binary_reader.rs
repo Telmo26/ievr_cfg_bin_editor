@@ -1,12 +1,10 @@
-use memmap2::Mmap;
-
 pub struct BinaryReader<'a> {
-    file: &'a Mmap,
+    file: &'a [u8],
     position: usize,
 }
 
 impl<'a> BinaryReader<'a> {
-    pub fn new(file: &'a Mmap) -> BinaryReader<'a> {
+    pub fn new(file: &'a [u8]) -> BinaryReader<'a> {
         BinaryReader { file, position: 0 }
     }
 

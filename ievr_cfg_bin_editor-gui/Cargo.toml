@@ -1,7 +1,8 @@
 [package]
-name = "ievr_cfg_bin_editor-gui"
+name = "ievr_cfg_bin_editor_gui"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+memmap2 = "0.9.9"
 ievr_cfg_bin_editor_core = { path = "../ievr_cfg_bin_editor-core" }

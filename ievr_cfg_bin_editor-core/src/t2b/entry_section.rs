@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 use crate::common::binary_reader::BinaryReader;
 
 #[derive(Debug)]
@@ -124,7 +126,7 @@ fn read_entry_types(binary_reader: &mut BinaryReader, count: i32) -> Vec<T2bValu
 }
 
 #[repr(u8)]
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum T2bValueType {
     String = 0,
     Integer = 1,

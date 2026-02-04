@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use crc_fast::{CrcParams, checksum_with_params};
-use memmap2::Mmap;
 
 use crate::{common::binary_reader::BinaryReader, t2b::{checksum_section::T2bChecksumEntry, entry_section::{ValueLength}}};
 
@@ -27,7 +26,7 @@ pub struct T2b {
 }
 
 impl T2b {
-    pub fn read(file: &Mmap) -> Option<T2b> {
+    pub fn read(file: &[u8]) -> Option<T2b> {
         let mut binary_reader = BinaryReader::new(file);
 
         if binary_reader.file_size() < MINIMUM_SIZE as usize {

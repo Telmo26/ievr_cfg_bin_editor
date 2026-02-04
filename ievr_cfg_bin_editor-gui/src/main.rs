@@ -1,28 +1,33 @@
-use std::path::PathBuf;
+use std::{env, error::Error, fs::File, io::Write, path::PathBuf};
 
-use ievr_cfg_bin_editor_core::{parse_database};
+use memmap2::Mmap;
 
-fn main() {
-    let input_path = "cpk_list-decrypted.cfg.bin";
-    // let input_path = "chara_param_1.03.66.00.cfg.bin";
-    // let input_path = "scout_phase_text_setting_1.03.25.cfg.bin";
+use ievr_cfg_bin_editor_core::parse_database;
 
-    let file_path = PathBuf::from(input_path);
+fn main() -> Result<(), Box<dyn Error>> {
+    let input_path = env::args()
+        .nth(1)
+        .expect("Usage: ievr_cfg_bin_editor <input_file>");
 
-    let database = parse_database(&file_path).unwrap();
+    let input_path = input_path.trim_matches('"').trim_end_matches("\\"); // This removes trailling backslashes and all quotes
+    
+    let file_path = PathBuf::from(&input_path);
+    let file = File::open(file_path).unwrap();
 
-    for table in database.tables() {
-        println!("{}", table.name());
-        println!("{:?}", table.schema());
-    }
+    let mmap = unsafe { Mmap::map(&file).unwrap() };
 
-    let table = database.table("CPK_ITEM").unwrap();
+    let database = parse_database(&mmap).expect("Failed to parse database");
 
-    println!("{:?}", table.rows()[0]);
+    let path_buf = PathBuf::from(&input_path);
+    let input_file_name = path_buf
+        .file_name()
+        .expect("Invalid input file")
+        .to_string_lossy();
 
-    // println!("\nList elements:");
-    // for list_element in rdbn.lists {
-    //     println!("{}", list_element.name)
-    // }
+    let output_path = PathBuf::from(format!("{input_file_name}.json"));
 
+    let mut file = File::create(output_path).unwrap();
+    file.write_all(database.serialize().as_bytes())?;
+
+    Ok(())
 }

@@ -6,15 +6,21 @@ use crate::{rdbn::Rdbn, t2b::{T2b, T2bEntry}};
 
 mod utils;
 
-use utils::*;
+use serde::{Deserialize, Serialize};
+pub use utils::*;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Database {
     source: DatabaseSource,
     tables: Vec<Table>,
 }
 
 impl Database {
+    pub fn serialize(&self) -> String {
+        let json = serde_json::to_string_pretty(&self).unwrap();
+        json
+    }
+
     pub fn tables(&self) -> &Vec<Table> {
         &self.tables
     }
@@ -110,7 +116,7 @@ impl From<T2b> for Database {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum DatabaseSource {
     RDBN,
     T2B

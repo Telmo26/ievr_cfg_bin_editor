@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use memmap2::Mmap;
-
 mod header;
 mod root_entry;
 mod type_entry;
@@ -36,7 +34,7 @@ pub struct Rdbn {
 }
 
 impl Rdbn {
-    pub fn read(file: &Mmap) -> Option<Rdbn> {
+    pub fn read(file: &[u8]) -> Option<Rdbn> {
         if file.len() < MINIMUM_SIZE {
             return None
         }

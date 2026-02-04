@@ -1,5 +1,7 @@
+use serde::{Deserialize, Serialize};
+
 #[repr(i16)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum RdbnFieldType {
     AbilityData = 0,
     EnhanceData = 1,
