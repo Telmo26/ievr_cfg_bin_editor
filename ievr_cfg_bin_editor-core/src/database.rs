@@ -1,8 +1,6 @@
 #![allow(dead_code)]
 
-use std::collections::HashMap;
-
-use crate::{rdbn::Rdbn, t2b::{T2b, T2bEntry}};
+use crate::{rdbn::Rdbn, t2b::{HashType, T2b, T2bEntry, ValueLength}};
 
 mod utils;
 
@@ -64,32 +62,27 @@ impl From<Rdbn> for Database {
 }
 
 impl From<T2b> for Database {
-    fn from(t2b: T2b) -> Self {
-        let mut t2b_iter = t2b.entries.into_iter();
-
-        t2b_iter.next().unwrap(); // The first info is the size of the file. It is not useful since we want to group by name
-        
+    fn from(t2b: T2b) -> Self {       
         let mut tables: Vec<Vec<T2bEntry>> = Vec::new();
+        let mut index = usize::MAX;
 
-        let mut hash_map: HashMap<String, usize> = HashMap::new();
-        let mut index = 0;
+        for entry in t2b.entries {
+            if entry.name.contains("BEG") {
+                if index == usize::MAX { index = 0 } // if we just started
+                else { index += 1 };
 
-        for entry in t2b_iter {
-            let i = hash_map.entry(entry.name.clone()).or_insert_with(|| {
-                let idx = index;
                 tables.push(Vec::new());
-                index += 1;
-                idx
-            });
-            tables[*i].push(entry);
-        };
+            }
+
+            tables[index].push(entry);
+        }
 
         let tables = tables.into_iter().map( |table| {
-            let name = table[0].name.clone();
+            let name = table[1].name.clone(); // The first value in always the table header
 
             let schema = Schema {
                 name: String::new(),
-                fields: table[0].values.iter().map(|value| Field {
+                fields: table[1].values.iter().map(|value| Field {
                     name: String::new(),
                     value_type: ValueType::T2b(value.r#type),
                     count: 1,
@@ -112,13 +105,13 @@ impl From<T2b> for Database {
             }
         }).collect();
 
-        Database { source: DatabaseSource::T2B, tables }
+        Database { source: DatabaseSource::T2B(t2b.encoding, t2b.value_length, t2b.hash_type), tables }
     }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum DatabaseSource {
     RDBN,
-    T2B
+    T2B(i16, ValueLength, HashType)
 }
 

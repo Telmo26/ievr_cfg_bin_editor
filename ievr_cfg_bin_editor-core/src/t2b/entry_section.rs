@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::common::binary_reader::BinaryReader;
+use crate::{common::binary_reader::BinaryReader, database::ValueType};
 
 #[derive(Debug)]
 pub struct T2bEntrySection {
@@ -39,7 +39,7 @@ impl T2bEntrySection {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum ValueLength {
     Int = 4,
     Long = 8
@@ -141,6 +141,15 @@ impl From<u8> for T2bValueType {
             1 => T2bValueType::Integer,
             2 => T2bValueType::FloatingPoint,
             _ => T2bValueType::Invalid,
+        }
+    }
+}
+
+impl From<ValueType> for T2bValueType {
+    fn from(value: ValueType) -> Self {
+        match value {
+            ValueType::T2b(vt) => vt,
+            ValueType::Rdbn(_) => unreachable!() // This should be prevented higher in the call chain
         }
     }
 }

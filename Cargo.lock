@@ -42,20 +42,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "ievr_cfg_bin_editor_cli"
+version = "0.1.0"
+dependencies = [
+ "ievr_cfg_bin_editor_core",
+ "memmap2",
+]
+
+[[package]]
 name = "ievr_cfg_bin_editor_core"
 version = "0.1.0"
 dependencies = [
  "crc-fast",
  "serde",
  "serde_json",
-]
-
-[[package]]
-name = "ievr_cfg_bin_editor_gui"
-version = "0.1.0"
-dependencies = [
- "ievr_cfg_bin_editor_core",
- "memmap2",
 ]
 
 [[package]]
