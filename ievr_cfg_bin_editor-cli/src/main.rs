@@ -16,7 +16,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mmap = unsafe { Mmap::map(&file).unwrap() };
 
-    let database = parse_database(&mmap).expect("Failed to parse database");
+    let database = parse_database(&mmap).expect("Failed to parse database");      
 
     let path_buf = PathBuf::from(&input_path);
     let input_file_name = path_buf

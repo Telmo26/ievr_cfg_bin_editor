@@ -1,5 +1,5 @@
 [package]
-name = "ievr_cfg_bin_editor_gui"
+name = "ievr_cfg_bin_editor_cli"
 version = "0.1.0"
 edition = "2024"
 
