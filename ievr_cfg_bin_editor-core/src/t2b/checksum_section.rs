@@ -27,10 +27,10 @@ impl T2bChecksumSection {
 }
 
 pub struct T2bChecksumHeader {
-    _size: u32,
-    count: u32,
-    string_offset: u32,
-    string_size: u32,
+    pub _size: u32,
+    pub count: u32,
+    pub string_offset: u32,
+    pub string_size: u32,
 }
 
 impl T2bChecksumHeader {

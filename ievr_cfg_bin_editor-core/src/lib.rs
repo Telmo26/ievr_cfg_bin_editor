@@ -20,3 +20,9 @@ pub fn parse_database(file: &[u8]) -> std::io::Result<Database> {
         }
     }
 }
+
+pub fn test_t2b_writing(file: &[u8]) {
+    if let Some(t2b) = T2b::read(file) {
+        T2b::write(t2b);
+    }
+}
