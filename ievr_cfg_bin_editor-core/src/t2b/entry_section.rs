@@ -46,10 +46,10 @@ pub enum ValueLength {
 }
 
 pub struct T2bEntryHeader {
-    entry_count: u32,
-    string_data_offset: u32,
-    string_data_length: u32,
-    _string_data_count: u32,
+    pub entry_count: u32,
+    pub string_data_offset: u32,
+    pub string_data_length: u32,
+    pub _string_data_count: u32,
 }
 
 impl T2bEntryHeader {

@@ -11,6 +11,7 @@ mod entry_section;
 mod checksum_section;
 
 mod reader;
+mod writer;
 
 #[derive(Debug)]
 pub struct T2b {
@@ -20,7 +21,7 @@ pub struct T2b {
     pub hash_type: HashType,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum HashType {
     Crc32Standard,
     Crc32Jam,

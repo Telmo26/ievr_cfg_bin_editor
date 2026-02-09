@@ -2,7 +2,7 @@ use std::{env, error::Error, fs::File, io::Write, path::PathBuf};
 
 use memmap2::Mmap;
 
-use ievr_cfg_bin_editor_core::parse_database;
+use ievr_cfg_bin_editor_core::{parse_database, test_t2b_writing};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let input_path = env::args()
