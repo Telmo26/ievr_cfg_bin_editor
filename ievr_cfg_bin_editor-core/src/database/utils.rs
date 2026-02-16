@@ -2,7 +2,7 @@ use serde::{Serialize, Deserialize};
 
 use crate::{rdbn::{RdbnFieldType, RdbnValue}, t2b::{T2bEntryValue, T2bValue, T2bValueType}};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Table {
     pub(super) name: String,
     pub(super) schema: Schema,
@@ -31,7 +31,7 @@ impl Table {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Schema {
     pub(super) name: String,
     pub(super) fields: Vec<Field>
@@ -41,19 +41,20 @@ impl Schema {
     
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Field {
     pub name: String,
     pub value_type: ValueType,
     pub count: usize,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Row {
+    pub name: String,
     pub values: Vec<Vec<Value>>, // A single column can store multiple values in the RDBN data format
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ValueType {
     Rdbn(RdbnFieldType),
     T2b(T2bValueType),
@@ -105,6 +106,34 @@ impl From<&T2bEntryValue> for Value {
             T2bValue::Long(v) => Value::Long(*v),
             T2bValue::F32(v) => Value::Float(*v),
             T2bValue::F64(v) => Value::FloatLong(*v),
+        }
+    }
+}
+
+impl Into<T2bEntryValue> for Value {
+    fn into(self) -> T2bEntryValue {
+        match self {
+            Value::String(s) => T2bEntryValue {
+                r#type: T2bValueType::String,
+                value: T2bValue::String(s),
+            },
+            Value::Int(i) => T2bEntryValue {
+                r#type: T2bValueType::Integer,
+                value: T2bValue::Integer(i),
+            },
+            Value::Long(l) => T2bEntryValue {
+                r#type: T2bValueType::Integer,
+                value: T2bValue::Long(l),
+            },
+            Value::Float(f) => T2bEntryValue {
+                r#type: T2bValueType::FloatingPoint,
+                value: T2bValue::F32(f),
+            },
+            Value::FloatLong(fl) => T2bEntryValue {
+                r#type: T2bValueType::FloatingPoint,
+                value: T2bValue::F64(fl),
+            },
+            _ => panic!("Trying to insert invalid value type in T2B")
         }
     }
 }

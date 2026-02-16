@@ -7,7 +7,7 @@ mod utils;
 use serde::{Deserialize, Serialize};
 pub use utils::*;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Database {
     source: DatabaseSource,
     tables: Vec<Table>,
@@ -49,6 +49,7 @@ impl From<Rdbn> for Database {
                 },
                 rows: list.values.iter().map(|row| {
                     Row {
+                        name: String::new(),
                         values: row.iter().map(|values| {
                             values.iter().map(Value::from).collect() // We convert every value in the database to the abstracted one
                         }).collect(),
@@ -78,7 +79,7 @@ impl From<T2b> for Database {
         }
 
         let tables = tables.into_iter().map( |table| {
-            let name = table[1].name.clone(); // The first value in always the table header
+            let name = strip_beg(&table[0].name).to_owned(); // The first value in always the table header
 
             let schema = Schema {
                 name: String::new(),
@@ -95,7 +96,10 @@ impl From<T2b> for Database {
                     vec![Value::from(value)]
                 }).collect();
 
-                rows.push(Row { values });
+                rows.push(Row { 
+                    name: entry.name.clone(),
+                    values 
+                });
             }
 
             Table {
@@ -109,9 +113,48 @@ impl From<T2b> for Database {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+impl Into<T2b> for Database {
+    fn into(self) -> T2b {
+        if let DatabaseSource::T2B(encoding, value_length, hash_type) = self.source {
+            let mut entries: Vec<T2bEntry> = Vec::with_capacity(self.tables.iter().map(|t| t.rows.len()).sum());
+
+            for table in self.tables {
+                let len = table.rows.len() as i32; // The first row contains the number of entries
+
+                for row in table.rows {
+                    let entry = T2bEntry {
+                        name: row.name,
+                        values: row.values.into_iter().flat_map(|vector| {
+                            vector.into_iter().map(Value::into)
+                        }).collect()
+                    };
+
+                    entries.push(entry);
+                }
+            }
+
+            T2b {
+                entries,
+                encoding,
+                value_length,
+                hash_type
+            }
+
+        } else {
+            panic!("Trying to convert a RDBN file to T2B format");
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum DatabaseSource {
     RDBN,
     T2B(i16, ValueLength, HashType)
 }
 
+fn strip_beg(name: &str) -> &str {
+    match name.find("_BEG") {
+        Some(idx) => &name[..idx],
+        None => name,
+    }
+}
