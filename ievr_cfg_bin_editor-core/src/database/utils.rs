@@ -98,8 +98,8 @@ impl From<&RdbnValue> for Value {
     }
 }
 
-impl From<&T2bEntryValue> for Value {
-    fn from(entry: &T2bEntryValue) -> Self {
+impl From<T2bEntryValue> for Value {
+    fn from(entry: T2bEntryValue) -> Self {
         match &entry.value {
             T2bValue::String(v) => Value::String(v.clone()),
             T2bValue::Integer(v) => Value::Int(*v),

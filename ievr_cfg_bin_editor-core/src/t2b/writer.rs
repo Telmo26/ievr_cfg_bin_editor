@@ -1,4 +1,6 @@
-use std::{collections::{HashMap, HashSet}, fs::File, io::Write};
+use std::{collections::{HashSet, hash_map::Entry}, fs::File, io::Write};
+
+use rustc_hash::FxHashMap;
 
 use crate::{common::{binary_writer::BinaryWriter, compute_crc32_jam, compute_crc32_standard}, t2b::{HashType, T2bEntry, T2bValue, T2bValueType, ValueLength, checksum_section::T2bChecksumHeader, entry_section::T2bEntryHeader}};
 
@@ -8,7 +10,7 @@ use super::{
 
 impl T2b {
     pub fn write(self, output_file: &mut File) -> Result<(), std::io::Error> {
-        let mut bw = BinaryWriter::default();
+        let mut bw = BinaryWriter::new(self.file_size);
 
         bw.set_position(0x10);
 
@@ -45,7 +47,7 @@ fn write_entries(bw: &mut BinaryWriter, t2b: &T2b) -> T2bEntryHeader {
     let mut string_offset= bw.get_position() as u32 + string_data_offset - 0x10;
     let string_offset_base = string_offset;
     
-    let mut written_strings: HashMap<String, i64> = HashMap::new();
+    let mut written_strings: FxHashMap<&str, i64> = FxHashMap::with_hasher(Default::default());
     let mut string_count = 0u32;
 
     for entry in &t2b.entries {
@@ -69,8 +71,8 @@ fn write_entries(bw: &mut BinaryWriter, t2b: &T2b) -> T2bEntryHeader {
     }
 }
 
-fn write_entry(bw: &mut BinaryWriter, entry: &T2bEntry, encoding: i16, hash_type: HashType, 
-    value_length: ValueLength, string_offset_base: u32, written_strings: &mut HashMap<String, i64>, 
+fn write_entry<'a>(bw: &mut BinaryWriter, entry: &'a T2bEntry, encoding: i16, hash_type: HashType, 
+    value_length: ValueLength, string_offset_base: u32, written_strings: &mut FxHashMap<&'a str, i64>, 
     string_offset: &mut u32, string_count: &mut u32) 
 {
     match hash_type {
@@ -119,7 +121,7 @@ fn write_entry(bw: &mut BinaryWriter, entry: &T2bEntry, encoding: i16, hash_type
     }
 }
 
-fn write_string(bw: &mut BinaryWriter, string: &str, encoding: i16, value_length: ValueLength, string_offset_base: u32, written_strings: &mut HashMap<String, i64>, string_offset: &mut u32, string_count: &mut u32) {
+fn write_string<'a>(bw: &mut BinaryWriter, string: &'a str, encoding: i16, value_length: ValueLength, string_offset_base: u32, written_strings: &mut FxHashMap<&'a str, i64>, string_offset: &mut u32, string_count: &mut u32) {
     if let Some(name_offset) = written_strings.get(string) {
         write_value(bw, name_offset - string_offset_base as i64, value_length);
         return
@@ -148,16 +150,16 @@ fn write_value(bw: &mut BinaryWriter, value: i64, value_length: ValueLength) {
     }
 }
 
-fn cache_strings(mut position: i64, value: &str, _encoding: i16, written_strings: &mut HashMap<String, i64>) {
+fn cache_strings<'a>(mut position: i64, value: &'a str, _encoding: i16, written_strings: &mut FxHashMap<&'a str, i64>) {
     for (offset, ch) in value.char_indices() {
         // Create a slice from the current offset to the end
         let suffix = &value[offset..];
         
         // Only allocate the String (heap) when inserting into the Map
-        if written_strings.contains_key(suffix) { // This means that every following suffix is also in the hashmap
-            break; 
+        match written_strings.entry(suffix) {
+            Entry::Occupied(_) => break,
+            Entry::Vacant(v) => { v.insert(position); }
         }
-        written_strings.insert(suffix.to_owned(), position);
 
         // Update position
         position += ch.len_utf8() as i64;
@@ -165,7 +167,7 @@ fn cache_strings(mut position: i64, value: &str, _encoding: i16, written_strings
 
     // Cache the final empty string
     if !written_strings.contains_key("") {
-        written_strings.insert("".to_owned(), position);
+        written_strings.insert("", position);
     }
 }
 
@@ -189,7 +191,7 @@ fn write_checksum_entries(bw: &mut BinaryWriter, t2b: &T2b) -> T2bChecksumHeader
 
     let mut string_offset = (bw.get_position() as u32 + header_string_offset - 0x10) as u32;
     let string_offset_base = string_offset;
-    let mut written_strings = HashMap::new();
+    let mut written_strings = FxHashMap::with_hasher(Default::default());
     let mut string_count = 0;
 
     for name in names {

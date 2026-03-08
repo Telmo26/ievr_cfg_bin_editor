@@ -71,10 +71,12 @@ impl T2b {
 
         // println!("{:?}", entry_section);
 
-        Some(T2b::create_configuration(entry_section, checksum_section, &value_string_data, checksum_string_data, encoding, hash_type))
+        Some(T2b::create_configuration(entry_section, checksum_section, &value_string_data, checksum_string_data, encoding, hash_type, file.len()))
     }
 
-    fn create_configuration(entry_section: T2bEntrySection, checksum_section: T2bChecksumSection, value_string_data: &[u8], checksum_string_data: &[u8], encoding: i16, hash_type: HashType) -> T2b {
+    fn create_configuration(entry_section: T2bEntrySection, checksum_section: T2bChecksumSection, value_string_data: &[u8], 
+        checksum_string_data: &[u8], encoding: i16, hash_type: HashType, file_size: usize
+    ) -> T2b {
         let checksum_offset_lookup: HashMap<u32, u32> = checksum_section.checksum_entries.iter().map(|section| {
             (section.crc, section.string_offset - checksum_section.checksum_entries[0].string_offset)
         })
@@ -128,6 +130,7 @@ impl T2b {
         }
 
         T2b {
+            file_size,
             entries: config_entries,
             encoding,
             value_length: entry_section.value_length,

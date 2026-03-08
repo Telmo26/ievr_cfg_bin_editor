@@ -5,6 +5,13 @@ pub struct BinaryWriter {
 }
 
 impl BinaryWriter {
+    pub fn new(file_size: usize) -> Self {
+        BinaryWriter { 
+            data: Vec::with_capacity(file_size), 
+            position: 0
+        }
+    }
+    
     pub fn set_position(&mut self, position: usize) {
         if position > self.data.len() {
             self.data.resize(position, 0);
