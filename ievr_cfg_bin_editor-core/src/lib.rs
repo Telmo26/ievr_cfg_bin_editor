@@ -37,8 +37,6 @@ pub fn test_t2b_writing(file: &[u8]) {
 
         row.values[1][0] = Value::Float(1.1);
 
-        let new_t2b: T2b = database.into();
-
-        T2b::write(new_t2b);
+        database.write("output").unwrap();
     }
 }

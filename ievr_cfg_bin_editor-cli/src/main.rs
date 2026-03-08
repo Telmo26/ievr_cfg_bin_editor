@@ -2,7 +2,7 @@ use std::{env, error::Error, fs::File, io::Write, path::PathBuf};
 
 use memmap2::Mmap;
 
-use ievr_cfg_bin_editor_core::{parse_database, test_t2b_writing};
+use ievr_cfg_bin_editor_core::parse_database;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let input_path = env::args()
@@ -27,7 +27,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let output_path = PathBuf::from(format!("{input_file_name}.json"));
 
     let mut file = File::create(output_path).unwrap();
-    file.write_all(database.serialize().as_bytes())?;
+    file.write_all(database.serialize()?.as_bytes())?;
 
     Ok(())
 }

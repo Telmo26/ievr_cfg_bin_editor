@@ -42,10 +42,6 @@ impl BinaryWriter {
         self.write_bytes(&data.to_le_bytes());
     }
 
-    pub fn write_u16(&mut self, data: u16) {
-        self.write_bytes(&data.to_le_bytes());
-    }
-
     pub fn write_i32(&mut self, data: i32) {
         self.write_bytes(&data.to_le_bytes());
     }

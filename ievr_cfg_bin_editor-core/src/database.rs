@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use std::{fs::File, path::Path};
+
 use crate::{rdbn::Rdbn, t2b::{HashType, T2b, T2bEntry, ValueLength}};
 
 mod utils;
@@ -14,9 +16,8 @@ pub struct Database {
 }
 
 impl Database {
-    pub fn serialize(&self) -> String {
-        let json = serde_json::to_string_pretty(&self).unwrap();
-        json
+    pub fn serialize(&self) -> serde_json::Result<String> {
+        serde_json::to_string_pretty(&self)
     }
 
     pub fn tables(&self) -> &Vec<Table> {
@@ -29,6 +30,22 @@ impl Database {
 
     pub fn table_mut(&mut self, name: &str) -> Option<&mut Table> {
         self.tables.iter_mut().find(|table| table.name == name)
+    }
+
+    pub fn write<T: AsRef<Path>>(self, output_path: T) -> Result<(), std::io::Error> {
+        let mut output_file = File::create(output_path)?;
+
+        match self.source {
+            DatabaseSource::T2B(..) => {
+                let t2b: T2b = self.into();
+                t2b.write(&mut output_file)
+            }
+
+            DatabaseSource::RDBN => {
+                eprintln!("This tool doesn't support writing RDBN files as of now");
+                Err(std::io::ErrorKind::NotFound.into())
+            }
+        }
     }
 }
 
@@ -119,8 +136,6 @@ impl Into<T2b> for Database {
             let mut entries: Vec<T2bEntry> = Vec::with_capacity(self.tables.iter().map(|t| t.rows.len()).sum());
 
             for table in self.tables {
-                let len = table.rows.len() as i32; // The first row contains the number of entries
-
                 for row in table.rows {
                     let entry = T2bEntry {
                         name: row.name,
