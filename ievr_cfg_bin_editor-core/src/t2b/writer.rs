@@ -131,7 +131,7 @@ fn write_string(bw: &mut BinaryWriter, string: &str, encoding: i16, value_length
     let entry_offset = bw.get_position();
 
     bw.set_position(*string_offset as usize);
-    cache_strings(*string_offset as i64, &string, encoding, written_strings);
+    cache_strings(*string_offset as i64, string, encoding, written_strings);
     
     bw.write_string(&string, true);
 
@@ -154,9 +154,10 @@ fn cache_strings(mut position: i64, value: &str, _encoding: i16, written_strings
         let suffix = &value[offset..];
         
         // Only allocate the String (heap) when inserting into the Map
-        if !written_strings.contains_key(suffix) {
-            written_strings.insert(suffix.to_owned(), position);
+        if written_strings.contains_key(suffix) { // This means that every following suffix is also in the hashmap
+            break; 
         }
+        written_strings.insert(suffix.to_owned(), position);
 
         // Update position
         position += ch.len_utf8() as i64;
