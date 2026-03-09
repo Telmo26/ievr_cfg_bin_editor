@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use std::{fs::File, path::Path};
+
 use crate::{rdbn::Rdbn, t2b::{HashType, T2b, T2bEntry, ValueLength}};
 
 mod utils;
@@ -10,13 +12,13 @@ pub use utils::*;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Database {
     source: DatabaseSource,
+    original_size: usize,
     tables: Vec<Table>,
 }
 
 impl Database {
-    pub fn serialize(&self) -> String {
-        let json = serde_json::to_string_pretty(&self).unwrap();
-        json
+    pub fn serialize(&self) -> serde_json::Result<String> {
+        serde_json::to_string_pretty(&self)
     }
 
     pub fn tables(&self) -> &Vec<Table> {
@@ -29,6 +31,22 @@ impl Database {
 
     pub fn table_mut(&mut self, name: &str) -> Option<&mut Table> {
         self.tables.iter_mut().find(|table| table.name == name)
+    }
+
+    pub fn write<T: AsRef<Path>>(self, output_path: T) -> Result<(), std::io::Error> {
+        let mut output_file = File::create(output_path)?;
+
+        match self.source {
+            DatabaseSource::T2B(..) => {
+                let t2b: T2b = self.into();
+                t2b.write(&mut output_file)
+            }
+
+            DatabaseSource::RDBN => {
+                eprintln!("This tool doesn't support writing RDBN files as of now");
+                Err(std::io::ErrorKind::NotFound.into())
+            }
+        }
     }
 }
 
@@ -58,7 +76,11 @@ impl From<Rdbn> for Database {
             }
         }).collect();
 
-        Database { source: DatabaseSource::RDBN, tables }
+        Database { 
+            original_size: rdbn.file_size,
+            source: DatabaseSource::RDBN, 
+            tables 
+        }
     }
 }
 
@@ -92,12 +114,12 @@ impl From<T2b> for Database {
 
             let mut rows = Vec::with_capacity(table.len());
             for entry in table {
-                let values = entry.values.iter().map(|value | {
-                    vec![Value::from(value)]
+                let values = entry.values.into_iter().map(|value | {
+                    vec![value.into()]
                 }).collect();
 
                 rows.push(Row { 
-                    name: entry.name.clone(),
+                    name: entry.name,
                     values 
                 });
             }
@@ -109,7 +131,11 @@ impl From<T2b> for Database {
             }
         }).collect();
 
-        Database { source: DatabaseSource::T2B(t2b.encoding, t2b.value_length, t2b.hash_type), tables }
+        Database { 
+            original_size: t2b.file_size,
+            source: DatabaseSource::T2B(t2b.encoding, t2b.value_length, t2b.hash_type), 
+            tables 
+        }
     }
 }
 
@@ -119,13 +145,12 @@ impl Into<T2b> for Database {
             let mut entries: Vec<T2bEntry> = Vec::with_capacity(self.tables.iter().map(|t| t.rows.len()).sum());
 
             for table in self.tables {
-                let len = table.rows.len() as i32; // The first row contains the number of entries
-
                 for row in table.rows {
                     let entry = T2bEntry {
                         name: row.name,
-                        values: row.values.into_iter().flat_map(|vector| {
-                            vector.into_iter().map(Value::into)
+                        values: row.values.into_iter().map(|mut vector| {
+                            // We know T2Bs cannot hold more than 1 item per row
+                            vector.pop().unwrap().into()
                         }).collect()
                     };
 
@@ -134,6 +159,7 @@ impl Into<T2b> for Database {
             }
 
             T2b {
+                file_size: self.original_size,
                 entries,
                 encoding,
                 value_length,

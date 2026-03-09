@@ -13,6 +13,7 @@ mod writer;
 
 #[derive(Debug, Clone)]
 pub struct T2b {
+    pub file_size: usize,
     pub entries: Vec<T2bEntry>,
     pub encoding: i16,
     pub value_length: ValueLength,

@@ -29,6 +29,7 @@ const MINIMUM_SIZE: usize = 0x3C;
 const RDBN_HEADER: u32 = const { u32::from_le_bytes(*b"RDBN") };
 
 pub struct Rdbn {
+    pub file_size: usize,
     pub types: Vec<RdbnTypeDeclaration>,
     pub lists: Vec<RdbnListEntry>,
 }
@@ -70,7 +71,7 @@ impl Rdbn {
 
         if let Some(string_lookup) = Self::read_strings(&mut binary_reader, header.hash_count, hash_offset, offset_offset, string_offset) {
             let value_offset = ((header.value_offset as i32) << 2) + data_offset as i32;
-            return Some(Self::create_rdbn(binary_reader, value_offset, string_offset, root_entries, type_entries, field_entries, string_lookup))
+            return Some(Self::create_rdbn(binary_reader, value_offset, string_offset, root_entries, type_entries, field_entries, string_lookup, file.len()))
         } else {
             None
         }
@@ -164,7 +165,10 @@ impl Rdbn {
         String::from_utf8(result).unwrap()
     }
 
-    fn create_rdbn(mut binary_reader: BinaryReader, value_offset: i32, string_offset: i32, root_entries: Vec<RdbnRootEntry>, type_entries: Vec<RdbnTypeEntry>, field_entries: Vec<RdbnFieldEntry>, string_lookup: HashMap<u32, String>) -> Rdbn {
+    fn create_rdbn(mut binary_reader: BinaryReader, value_offset: i32, string_offset: i32, root_entries: Vec<RdbnRootEntry>, 
+        type_entries: Vec<RdbnTypeEntry>, field_entries: Vec<RdbnFieldEntry>, string_lookup: HashMap<u32, String>,
+        file_size: usize
+    ) -> Rdbn {
         let mut type_declarations = Vec::with_capacity(type_entries.len());
         for type_entry in &type_entries {
             debug_assert!(type_entry.field_count > 0);
@@ -281,6 +285,7 @@ impl Rdbn {
         }
 
         return Rdbn {
+            file_size,
             types: distinct_types,
             lists,
         }
